@@ -1,9 +1,9 @@
-import User from "../models/UserModel.js";
+import { Admin } from "../models/AdminModel.js";
 
 export const isAdmin = async (req, res, next) => {
 
     try {
-        const user = await User.findById(req.user._id)
+        const user = await Admin.findById(req.user._id)
         
         //Check if the user is admin
         if (user && user.is_admin) {

@@ -124,11 +124,33 @@ export const rejectOwnerRequestHandler = async (req, res) => {
 }
 
 export const allOwnerRequestHandler = async (req, res) => {
+    try {
+        const owners = await Owner.find({ is_approved: { $gt: 0 } }).populate('store_details');
+        return res.status(200).json({
+            status: "Success",
+            message: "Owners retrieved successfully",
+            data: {
+                ownerRequest: owners
+            }
+        })
+    }
+    catch (err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Owners retrieval failed!",
+            data: {
+                error: err.message
+            }
+        })
+    }
+}
+
+export const ownerRequestFilterHandler = async (req, res) => {
 
     const status = +req.query.status;
 
     try {
-        if(!status) {
+        if (!status) {
             return res.status(400).json({
                 status: "Error",
                 message: "Owners retrieval failed!",
@@ -143,29 +165,40 @@ export const allOwnerRequestHandler = async (req, res) => {
                 status: "Success",
                 message: "Owners retrieved successfully",
                 data: {
-                    owners
+                    ownerRequest: owners
                 }
             })
         }
 
-        else if(status === 2) {
+        else if (status === 2) {
             const owners = await Owner.find({ is_approved: 2 }).populate('store_details');
             return res.status(200).json({
                 status: "Success",
                 message: "Owners retrieved successfully",
                 data: {
-                    owners
+                    ownerRequest: owners
                 }
             })
         }
 
-        else if(status === 3) {
+        else if (status === 3) {
             const owners = await Owner.find({ is_approved: 3 }).populate('store_details');
             return res.status(200).json({
                 status: "Success",
                 message: "Owners retrieved successfully",
                 data: {
-                    owners
+                    ownerRequest: owners
+                }
+            })
+        }
+
+        else if (status === 0) {
+            const owners = await Owner.find().populate('store_details');
+            return res.status(200).json({
+                status: "Success",
+                message: "Owners retrieved successfully",
+                data: {
+                    ownerRequest: owners
                 }
             })
         }
@@ -175,6 +208,37 @@ export const allOwnerRequestHandler = async (req, res) => {
         return res.status(500).json({
             status: "Error",
             message: "Owners retrieval failed!",
+            data: {
+                error: err.message
+            }
+        })
+    }
+}
+
+
+export const ownerByIdHandler = async (req, res) => {
+    const ownerId = new mongoose.Types.ObjectId(req.params.id);
+
+    try {
+        const owner = await Owner.findById(ownerId).populate('store_details');
+        if (!owner) {
+            return res.status(404).json({
+                status: "Error",
+                message: "Owner not found!"
+            })
+        }
+        return res.status(200).json({
+            status: "Success",
+            message: "Owner retrieved successfully",
+            data: {
+                ownerRequest: owner
+            }
+        })
+    }
+    catch (err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Owner retrieval failed!",
             data: {
                 error: err.message
             }

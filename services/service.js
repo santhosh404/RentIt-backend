@@ -187,7 +187,7 @@ export async function ownerRequestToAdmin(mailId, requestDetails) {
                     </ul>
                     <p>Please review the request and take appropriate action.</p>
                     <p>
-                    <a href="https://yourwebsite.com/view-request" class="btn"
+                    <a href="${process.env.FRONTEND_BASE_URL}/admin/sign-in" class="btn"
                         >View Request</a
                     >
                     </p>
