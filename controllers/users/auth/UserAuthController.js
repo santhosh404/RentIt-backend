@@ -48,7 +48,7 @@ const signUpHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Signup Failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }
@@ -122,7 +122,7 @@ const signInHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Signup Failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }
@@ -168,7 +168,7 @@ const forgotPasswordHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Forgot Password Failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }
@@ -237,7 +237,7 @@ const resetPasswordHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Reset Password Failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }

@@ -31,7 +31,7 @@ export const ownerRequestById = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Owner request retrieval failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }
@@ -161,7 +161,7 @@ export const makeOwnerRequestHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Owner request failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }

@@ -86,7 +86,8 @@ export const uploadFile = async (req, res) => {
         const uploadParams = {
             Bucket: "rentitasserts",
             Key: file.originalname,
-            Body: file.buffer
+            Body: file.buffer,
+            ACL: "public-read"
         };
 
         const data = await s3Client.send(new PutObjectCommand(uploadParams));
@@ -105,10 +106,12 @@ export const uploadFile = async (req, res) => {
 
     }
     catch (err) {
-        console.log(err);
         res.status(500).json({
             status: "Error",
-            message: "File upload failed",
+            message: "Internal Server Error",
+            data: {
+                error: err.message
+            }
         });
     }
 }

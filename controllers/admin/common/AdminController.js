@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { Owner } from "../../../models/OwnerModel.js";
+import { statusUpdateToOwner } from "../../../services/service.js";
 
 export const approveOwnerRequestHandler = async (req, res) => {
     const ownerId = new mongoose.Types.ObjectId(req.body.id)
@@ -43,6 +44,12 @@ export const approveOwnerRequestHandler = async (req, res) => {
         }
 
         const approveOwner = await Owner.findOneAndUpdate({ _id: ownerId }, { $set: { is_approved: 1 } }, { new: true })
+
+        console.log(owner.first_name);
+
+        //Sending the mail to owner regarding the status
+        await statusUpdateToOwner(owner.email, 'accepted', owner.first_name)
+
         return res.status(200).json({
             status: "Success",
             message: "Owner approved successfully",
@@ -54,7 +61,7 @@ export const approveOwnerRequestHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Owner approval failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }
@@ -104,6 +111,10 @@ export const rejectOwnerRequestHandler = async (req, res) => {
         }
 
         const rejectedOwner = await Owner.findOneAndUpdate({ _id: ownerId }, { $set: { is_approved: 2 } }, { new: true })
+
+        //Sending the mail to owner regarding the status
+        await statusUpdateToOwner(owner.email, 'rejected', owner.first_name);
+
         return res.status(200).json({
             status: "Success",
             message: "Owner rejected successfully",
@@ -115,7 +126,7 @@ export const rejectOwnerRequestHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Owner rejection failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }
@@ -137,7 +148,7 @@ export const allOwnerRequestHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Owners retrieval failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }
@@ -207,7 +218,7 @@ export const ownerRequestFilterHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Owners retrieval failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }
@@ -238,7 +249,7 @@ export const ownerByIdHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Owner retrieval failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }

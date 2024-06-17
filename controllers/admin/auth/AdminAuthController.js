@@ -50,9 +50,9 @@ export const signUpAdminHandler = async (req, res) => {
         })
     }
     catch (err) {
-        return res.status(400).json({
+        return res.status(500).json({
             status: "Error",
-            message: "Signup Failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }
@@ -125,7 +125,7 @@ export const signInAdminHandler = async (req, res) => {
     catch (err) {
         return res.status(500).json({
             status: "Error",
-            message: "Signup Failed!",
+            message: "Internal Server Error!",
             data: {
                 error: err.message
             }
