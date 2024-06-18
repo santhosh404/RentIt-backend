@@ -3,6 +3,7 @@ import { Owner } from "../../../models/OwnerModel.js";
 import { Store } from "../../../models/StoreModel.js";
 import User from "../../../models/UserModel.js";
 import { ownerRequestToAdmin } from "../../../services/service.js";
+import bcrypt from "bcryptjs"
 
 export const ownerRequestById = async (req, res) => {
 
@@ -173,7 +174,7 @@ export const makeOwnerRequestHandler = async (req, res) => {
 
 export const getUserMailId = async (req, res) => {
     const user = await User.findOne({ _id: req.user._id });
-    if(!user) {
+    if (!user) {
         return res.status(404).json({
             status: "Error",
             message: "User not found!",
@@ -189,4 +190,47 @@ export const getUserMailId = async (req, res) => {
             user: user
         }
     })
+}
+
+export const updateProfile = async (req, res) => {
+
+    let { password, ...rest } = req.body
+
+    try {
+        const user = await User.findOne({ _id: req.user._id });
+        if (!user) {
+            return res.status(404).json({
+                status: "Error",
+                message: "User not found!",
+                data: {
+                    error: `User with id ${req.user._id} not found!`
+                }
+            })
+        }
+        let update = { ...rest };
+
+        if (password) {
+            update.password = await bcrypt.hash(password, 10);
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(req.user._id, update, { new: true });
+        res.status(200).json({
+            status: "Success",
+            message: "Profile updated successfully!",
+            data: {
+                user: updatedUser
+            }
+        })
+    }
+
+    catch (err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error!",
+            data: {
+                error: err.message
+            }
+        })
+    }
+
 }

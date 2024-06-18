@@ -23,6 +23,11 @@ const rentalStores = mongoose.Schema({
         required: true
     },
 
+    advance_amt: {
+        type: String,
+        required: true
+    },
+
     address_line1: {
         type: String,
         required: true
@@ -59,6 +64,11 @@ const rentalStores = mongoose.Schema({
     },
 
     available_to: {
+        type: String,
+        required: true
+    },
+
+    comment: {
         type: String,
         required: true
     },

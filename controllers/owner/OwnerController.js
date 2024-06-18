@@ -12,6 +12,7 @@ export const postStoreForRentHandler = async (req, res) => {
         description,
         specification,
         rate,
+        advance_amt,
         address_line1,
         address_line2,
         city,
@@ -19,18 +20,19 @@ export const postStoreForRentHandler = async (req, res) => {
         pincode,
         available_from,
         available_to,
+        comment,
         keywords,
         images
 
     } = req.body;
 
     try {
-        if (!square_feet || !description || !specification || !rate || !address_line1 || !address_line2 || !city || !state || !pincode || !available_from || !available_to || !keywords) {
+        if (!square_feet || !description || !specification || !rate || !advance_amt || !address_line1 || !address_line2 || !city || !state || !pincode || !available_from || !available_to || !keywords) {
             return res.status(400).json({
                 status: "Error",
                 message: "Invalid Request!",
                 data: {
-                    error: "Missing required fields 'square_feet', 'description', 'specification', 'rate', 'address_line1', 'address_line2', 'city', 'state', 'pincode', 'available_from', 'available_to', 'keywords'"
+                    error: "Missing required fields 'square_feet', 'description', 'specification', 'rate', 'advance_amt', 'address_line1', 'address_line2', 'city', 'state', 'pincode', 'available_from', 'available_to', 'keywords'"
                 }
             })
         }
@@ -47,7 +49,6 @@ export const postStoreForRentHandler = async (req, res) => {
         }
 
         const ownerRequest = await Owner.findOne({ user_id: req.user._id });
-        console.log(ownerRequest);
 
         if (!ownerRequest || ownerRequest.is_approved !== 1) {
             return res.status(400).json({
@@ -65,6 +66,7 @@ export const postStoreForRentHandler = async (req, res) => {
             description,
             specification,
             rate,
+            advance_amt,
             address_line1,
             address_line2,
             city,
@@ -72,6 +74,7 @@ export const postStoreForRentHandler = async (req, res) => {
             pincode,
             available_from: isValidDate(available_from) ? convertToISO(available_from) : available_from,
             available_to: isValidDate(available_to) ? convertToISO(available_to) : available_to,
+            comment,
             keywords,
             images,
             user_id: req.user._id
@@ -142,6 +145,7 @@ export const updateStoreByIdHandler = async (req, res) => {
         description,
         specification,
         rate,
+        advance_amt,
         address_line1,
         address_line2,
         city,
@@ -149,16 +153,18 @@ export const updateStoreByIdHandler = async (req, res) => {
         pincode,
         available_from,
         available_to,
-        keywords
+        comment,
+        keywords,
+        images
     } = req.body;
 
     try {
-        if (!square_feet || !description || !specification || !rate || !address_line1 || !address_line2 || !city || !state || !pincode || !available_from || !available_to || !keywords) {
+        if (!square_feet || !description || !specification || !rate || !advance_amt || !address_line1 || !address_line2 || !city || !state || !pincode || !available_from || !available_to || !keywords) {
             return res.status(400).json({
                 status: "Error",
                 message: "Invalid Request!",
                 data: {
-                    error: "Missing required fields 'square_feet', 'description','specification', 'rate', 'address_line1', 'address_line2', 'city','state', 'pincode', 'available_from', 'available_to', 'keywords'"
+                    error: "Missing required fields 'square_feet', 'description','specification', 'rate', 'advance_amt', 'address_line1', 'address_line2', 'city','state', 'pincode', 'available_from', 'available_to', 'keywords'"
                 }
             })
         }
@@ -197,6 +203,7 @@ export const updateStoreByIdHandler = async (req, res) => {
             description,
             specification,
             rate,
+            advance_amt,
             address_line1,
             address_line2,
             city,
@@ -205,6 +212,8 @@ export const updateStoreByIdHandler = async (req, res) => {
             available_from: isValidDate(available_from) ? convertToISO(available_from) : available_from,
             available_to: isValidDate(available_to) ? convertToISO(available_to) : available_to,
             keywords,
+            comment,
+            images,
             user_id: req.user._id
         }, { new: true, upsert: true })
 
@@ -317,3 +326,4 @@ export const getStoreByIdHandler = async (req, res) => {
         })
     }
 }
+
