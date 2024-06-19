@@ -107,7 +107,7 @@ export const getStoreByUserIdHandler = async (req, res) => {
     const id = req.user._id;
 
     try {
-        const store = await RentalStores.find({ user_id: id });
+        const store = await RentalStores.find({ user_id: id }).populate('bookings');
         if (!store) {
             return res.status(404).json({
                 status: "Error",
@@ -298,7 +298,13 @@ export const getStoreByIdHandler = async (req, res) => {
     const id = new mongoose.Types.ObjectId(req.params.id);
 
     try {
-        const store = await RentalStores.findOne({ _id: id });
+        const store = await RentalStores.findOne({ _id: id }).populate('bookings').populate({
+            path: 'bookings',
+            populate: {
+                path: 'user_id',
+                model: 'User'
+            }
+        }).populate('user_id');
         if (!store) {
             return res.status(404).json({
                 status: "Error",

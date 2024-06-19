@@ -89,6 +89,10 @@ const rentalStores = mongoose.Schema({
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+    },
+    bookings: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Booking'
     }
 })
 
