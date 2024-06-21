@@ -3,6 +3,7 @@ import { Owner } from "../../models/OwnerModel.js";
 import { RentalStores } from "../../models/RentalStores.js";
 import User from "../../models/UserModel.js";
 import { convertToISO, isValidDate } from "../../utils/helper.js";
+import { Booking } from "../../models/BookingModel.js";
 
 export const postStoreForRentHandler = async (req, res) => {
 
@@ -333,3 +334,59 @@ export const getStoreByIdHandler = async (req, res) => {
     }
 }
 
+export const bookingRequestActionHandler = async (req, res) => {
+    const { booking_id, action } = req.body;
+
+    try {
+        if (!booking_id || !action) {
+            return res.status(400).json({
+                status: "Error",
+                message: "Invalid Request!",
+                data: {
+                    error: "Missing required fields 'booking_id', 'action'"
+                }
+            })
+        }
+
+        const booking = await Booking.findOne({ _id: new mongoose.Types.ObjectId(booking_id) });
+
+        if (!booking) {
+            return res.status(404).json({
+                status: "Error",
+                message: "Booking not found!",
+                data: {
+                    error: `Booking with id ${booking_id} not found!`
+                }
+            })
+        }
+
+        if (booking.is_available === 1 || booking.is_available === 2) {
+            return res.status(400).json({
+                status: "Error",
+                message: "Invalid Request!",
+                data: {
+                    error: "This booking is already accepted or rejected!"
+                }
+            })
+        }
+
+        const updateBooking = await Booking.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(booking_id) }, { $set: { is_available: action } }, { new: true })
+        res.status(200).json({
+            status: "Success",
+            message: `Booking ${action === 1 ? 'Accepted' : 'Rejected'} successfully!`,
+            data: {
+                booking: updateBooking
+            }
+        })
+    }
+
+    catch (err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error!",
+            data: {
+                error: err.message
+            }
+        })
+    }
+}

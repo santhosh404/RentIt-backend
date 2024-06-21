@@ -1,3 +1,4 @@
+import moment from "moment";
 import { Admin } from "../../../models/AdminModel.js";
 import { Booking } from "../../../models/BookingModel.js";
 import { Owner } from "../../../models/OwnerModel.js";
@@ -5,7 +6,9 @@ import { RentalStores } from "../../../models/RentalStores.js";
 import { Store } from "../../../models/StoreModel.js";
 import User from "../../../models/UserModel.js";
 import { ownerRequestToAdmin } from "../../../services/service.js";
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
+
 
 export const ownerRequestById = async (req, res) => {
 
@@ -249,7 +252,7 @@ export const makeRentRequestHandler = async (req, res) => {
         if (!start_date || !end_date || !rent_store_id) {
             return res.status(400).json({
                 status: "Error",
-                message: "Signup Failed!",
+                message: "Booking request Failed!",
                 data: {
                     error: "Missing required fields'start_date', 'end_date','rent_store_id'"
                 }
@@ -271,6 +274,19 @@ export const makeRentRequestHandler = async (req, res) => {
 
         const startDate = new Date(start_date);
         const endDate = new Date(end_date);
+
+        // Check if the duration is at least 3 months
+        const duration = moment(endDate).diff(moment(startDate), 'months', true);
+        if (duration < 3) {
+            return res.status(400).json({
+                status: "Error",
+                message: "Booking duration too short!",
+                data: {
+                    error: "Booking Should be at least 3 months"
+                }
+            });
+        }
+
 
         const isDateConflict = bookings.some(booking => {
             const bookingStartDate = new Date(booking.start_date);
@@ -304,7 +320,7 @@ export const makeRentRequestHandler = async (req, res) => {
 
         //Update the RentalStore Collection with booking id
         await RentalStores.findOneAndUpdate({ _id: rent_store_id }, { $push: { bookings: newBooking._id } }, { new: true, upsert: true });
-        
+
         return res.status(201).json({
             status: "Success",
             message: "Rent request made successfully!",
@@ -331,7 +347,7 @@ export const makeRentRequestHandler = async (req, res) => {
 
 export const allRentalStoresHandler = async (req, res) => {
     try {
-        const rentalStores = await RentalStores.find();
+        const rentalStores = await RentalStores.find({ user_id: { $ne: req.user._id } });
         return res.status(200).json({
             status: "Success",
             message: "All rental stores found!",
@@ -340,7 +356,67 @@ export const allRentalStoresHandler = async (req, res) => {
             }
         })
     }
-    catch(err) {
+    catch (err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error!",
+            data: {
+                error: err.message
+            }
+        })
+    }
+}
+
+export const getRentRequestOfUserHandler = async (req, res) => {
+    const userId = new mongoose.Types.ObjectId(req.user._id);
+
+    try {
+        const bookings = await Booking.aggregate([
+            {
+                $match: { user_id: userId }
+            },
+            {
+                $lookup: {
+                    from: 'rentalstores',
+                    localField: 'rental_store_id',
+                    foreignField: '_id',
+                    as: 'rental_store'
+                }
+            },
+            {
+                $unwind: '$rental_store'
+            },
+            {
+                $group: {
+                    _id: '$rental_store_id',
+                    rental_store: { $first: '$rental_store' },
+                    dates: {
+                        $push: {
+                            start_date: '$start_date',
+                            end_date: '$end_date',
+                            status: '$is_available'
+                        }
+                    }
+                }
+            }
+        ]);
+        // const bookings = await Booking.find({ user_id: req.user._id });
+        return res.status(200).json({
+            status: "Success",
+            message: "All rent requests found!",
+            data: {
+                bookings: bookings
+            }
+        })
+        return res.status(200).json({
+            status: "Success",
+            message: "All rent requests found!",
+            data: {
+                bookings: bookings
+            }
+        })
+    }
+    catch (err) {
         return res.status(500).json({
             status: "Error",
             message: "Internal Server Error!",

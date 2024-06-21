@@ -93,6 +93,10 @@ const rentalStores = mongoose.Schema({
     bookings: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'Booking'
+    },
+    created_at: {
+        type: Date,
+        default: Date.now
     }
 })
 
