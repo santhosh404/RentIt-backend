@@ -8,6 +8,10 @@ import User from "../../../models/UserModel.js";
 import { ownerRequestToAdmin } from "../../../services/service.js";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
+import Razorpay from "razorpay";
+import dotenv from "dotenv";
+import { Payment } from "../../../models/PaymentModel.js";
+dotenv.config();
 
 
 export const ownerRequestById = async (req, res) => {
@@ -392,6 +396,7 @@ export const getRentRequestOfUserHandler = async (req, res) => {
                     rental_store: { $first: '$rental_store' },
                     dates: {
                         $push: {
+                            booking_id: '$_id',
                             start_date: '$start_date',
                             end_date: '$end_date',
                             status: '$is_available'
@@ -408,11 +413,79 @@ export const getRentRequestOfUserHandler = async (req, res) => {
                 bookings: bookings
             }
         })
-        return res.status(200).json({
-            status: "Success",
-            message: "All rent requests found!",
+        
+    }
+    catch (err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error!",
             data: {
-                bookings: bookings
+                error: err.message
+            }
+        })
+    }
+}
+
+
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID || "",
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+export const makePaymentHandler = async (req, res) => {
+    let {
+        amount,
+        booking_id
+    } = req.body;
+
+    console.log(amount)
+    try {
+        if (!amount || !booking_id) {
+            return res.status(400).json({
+                status: "Error",
+                message: "Payment Failed!",
+                data: {
+                    error: "Missing required fields 'amount', 'booking_id'"
+                }
+            })
+        }
+        const store = await Booking.findOne({ _id: booking_id });
+        if (!store) {
+            return res.status(404).json({
+                status: "Error",
+                message: "Store not found!",
+                data: {
+                    error: `Booking with id ${booking_id} not found!`
+                }
+            })
+        }
+
+        const payment = await razorpay.orders.create({
+            // amount: parseInt(amount * 100),
+            // currency: "INR"
+            amount: 50000,
+            currency: "INR",
+            receipt: "receipt#1",
+            notes: {
+              key1: "value3",
+              key2: "value2"
+            }
+        });
+
+        console.log(payment)
+
+        const newPayment = new Payment({
+            amount: payment.amount,
+            transaction_id: payment.id,
+            booking_id: booking_id,
+            user_id: req.user._id
+        })
+
+        const newPaymentResponse = await newPayment.save();
+        return res.status(201).json({
+            status: "Success",
+            message: "Payment made successfully!",
+            data: {
+                newPayment: newPaymentResponse
             }
         })
     }
@@ -425,4 +498,53 @@ export const getRentRequestOfUserHandler = async (req, res) => {
             }
         })
     }
+}
+
+
+export const paymentVerificationHandler = async (req, res) => {
+
+    const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = req.body;
+
+    const body_data = razorpay_order_id + "|" + razorpay_payment_id;
+
+    const expect = crypto
+        .createHmac("sha256", config.RAZORPAY_KEY_SECRET || "")
+        .update(body_data)
+        .digest("hex");
+
+    const isValid = expect === razorpay_signature;
+    console.log(isValid);
+
+    try {
+        if (isValid) {
+            console.log("payment is successful");
+
+            await Payment.findOneAndUpdate(
+                { transaction_id: razorpay_order_id },
+                {
+                    $set: { razorpay_payment_id, razorpay_order_id, razorpay_signature },
+                }
+            );
+
+            res.redirect(
+                `${process.env.FRONTEND_BASE_URL}/success/payment_id=${razorpay_order_id}`
+            );
+            return;
+        } else {
+            res.redirect(
+                `${process.env.FRONTEND_BASE_URL}/failure/payment_id=${razorpay_order_id}`
+            );
+        }
+    }
+
+    catch(err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error!",
+            data: {
+                error: err.message
+            }
+        })
+    }
+   
 }
