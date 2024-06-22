@@ -26,6 +26,10 @@ const userModel = mongoose.Schema({
         type: Boolean,
         default: false
     },
+    is_owner: {
+        type: Boolean,
+        default: false
+    },
     createdAt: {
         type: Date,
         default: Date.now

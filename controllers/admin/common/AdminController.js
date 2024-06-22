@@ -17,7 +17,7 @@ export const approveOwnerRequestHandler = async (req, res) => {
             })
         }
 
-        const owner = await Owner.findById(ownerId);
+        const owner = await Owner.findById(ownerId).populate('user_id');
         if (!owner) {
             return res.status(404).json({
                 status: "Error",
@@ -45,7 +45,9 @@ export const approveOwnerRequestHandler = async (req, res) => {
 
         const approveOwner = await Owner.findOneAndUpdate({ _id: ownerId }, { $set: { is_approved: 1 } }, { new: true })
 
-        console.log(owner.first_name);
+        // Update user with is_owner
+        await User.findOneAndUpdate({ _id: owner.user_id._id }, { $set: { is_owner:  true} }, { new: true })
+
 
         //Sending the mail to owner regarding the status
         await statusUpdateToOwner(owner.email, 'accepted', owner.first_name)

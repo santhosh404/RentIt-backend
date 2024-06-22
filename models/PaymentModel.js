@@ -17,6 +17,10 @@ const paymentModel = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
+    payment_status: {
+        type: Number,
+        default: 0  // 0 - pending, 1 - success, 2 - failed
+    },
     createdAt: {
         type: Date,
         default: Date.now

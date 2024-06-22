@@ -1,5 +1,17 @@
 import express from 'express';
-import { allRentalStoresHandler, getRentRequestOfUserHandler, getUserMailId, makeOwnerRequestHandler, makePaymentHandler, makeRentRequestHandler, ownerRequestById, paymentVerificationHandler, updateProfile } from '../../controllers/users/common/UserCommonController.js';
+import { 
+    allRentalStoresHandler, 
+    getMyBookingLogs, 
+    getRentRequestOfUserHandler, 
+    getUserMailId, 
+    makeOwnerRequestHandler, 
+    makePaymentHandler, 
+    makeRentRequestHandler, 
+    ownerRequestById, 
+    paymentVerificationHandler, 
+    updatePaymentOnSuccessHandler, 
+    updateProfile 
+} from '../../controllers/users/common/UserCommonController.js';
 import { authorize } from '../../middlewares/AuthMiddleware.js';
 
 export const UserCommonRouter = express.Router();
@@ -13,3 +25,5 @@ UserCommonRouter.get('/common/rent-request', authorize, getRentRequestOfUserHand
 UserCommonRouter.get('/common/all-rental-stores', authorize, allRentalStoresHandler);
 UserCommonRouter.post('/common/payment', authorize, makePaymentHandler);
 UserCommonRouter.post('/common/payment-verification', authorize, paymentVerificationHandler); 
+UserCommonRouter.put('/common/update-payment', authorize, updatePaymentOnSuccessHandler);
+UserCommonRouter.get('/common/booking-logs', authorize, getMyBookingLogs);

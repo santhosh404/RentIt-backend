@@ -14,6 +14,10 @@ const bookingModel = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "RentalStore"
     },
+    payment_id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Payment"
+    },
     is_available: {
         type: Number,
         default: 0

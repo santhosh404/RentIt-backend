@@ -413,7 +413,7 @@ export const getRentRequestOfUserHandler = async (req, res) => {
                 bookings: bookings
             }
         })
-        
+
     }
     catch (err) {
         return res.status(500).json({
@@ -460,22 +460,15 @@ export const makePaymentHandler = async (req, res) => {
         }
 
         const payment = await razorpay.orders.create({
-            // amount: parseInt(amount * 100),
-            // currency: "INR"
-            amount: 50000,
-            currency: "INR",
-            receipt: "receipt#1",
-            notes: {
-              key1: "value3",
-              key2: "value2"
-            }
+            amount: parseInt(amount * 100),
+            currency: "INR"
         });
 
         console.log(payment)
 
         const newPayment = new Payment({
-            amount: payment.amount,
-            transaction_id: payment.id,
+            amount: payment.amount * 100,
+            // transaction_id: payment.id,
             booking_id: booking_id,
             user_id: req.user._id
         })
@@ -537,7 +530,7 @@ export const paymentVerificationHandler = async (req, res) => {
         }
     }
 
-    catch(err) {
+    catch (err) {
         return res.status(500).json({
             status: "Error",
             message: "Internal Server Error!",
@@ -546,5 +539,94 @@ export const paymentVerificationHandler = async (req, res) => {
             }
         })
     }
-   
+
+}
+
+
+export const updatePaymentOnSuccessHandler = async (req, res) => {
+    const { transaction_id, payment_id, status } = req.body;
+
+    try {
+        if (!transaction_id || !payment_id) {
+            return res.status(400).json({
+                status: "Error",
+                message: "Payment Failed!",
+                data: {
+                    error: "Missing required fields 'transaction_id', 'booking_id'"
+                }
+            })
+        }
+        const payment = await Payment.findOne({ _id: payment_id });
+        if (!payment) {
+            return res.status(404).json({
+                status: "Error",
+                message: "Payment not found!",
+                data: {
+                    error: `Payment with id ${payment_id} not found!`
+                }
+            })
+        }
+
+        //Updating the Payment collection with transaction_id ans status
+        await Payment.findOneAndUpdate({ _id: payment_id, transaction_id: transaction_id, status: status }, { new: true });
+
+        //Updating the Booking collection's is_available field with respection status
+
+        if (status === 1) {
+            await Booking.findOneAndUpdate({ _id: payment.booking_id }, { $set: { is_available: 4 } }, { new: true });
+        }
+
+        return res.status(200).json({
+            status: "Success",
+            message: "Payment status updated successfully!"
+        })
+    }
+
+    catch (err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error!",
+            data: {
+                error: err.message
+            }
+        })
+    }
+}
+
+
+export const getMyBookingLogs = async (req, res) => {
+    const userId = new mongoose.Types.ObjectId(req.user._id);
+
+    try {
+        if (!userId) {
+            return res.status(404).json({
+                status: "Error",
+                message: "User not found!",
+                data: {
+                    error: `User with id ${userId} not found!`
+                }
+            })
+        }
+
+        const bookedStores = await Booking.find({ user_id: userId, is_available: 4 }).populate('payment_id').populate('rental_store_id')
+        return res.status(200).json({
+            status: "Success",
+            message: "All Booking logs found!",
+            data: {
+                bookedStores: bookedStores
+            }
+        })
+    }
+
+    catch (err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error!",
+            data: {
+                error: err.message
+            }
+        })
+    }
+
+
 }
