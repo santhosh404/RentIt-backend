@@ -5,7 +5,7 @@ import { Owner } from "../../../models/OwnerModel.js";
 import { RentalStores } from "../../../models/RentalStores.js";
 import { Store } from "../../../models/StoreModel.js";
 import User from "../../../models/UserModel.js";
-import { ownerRequestToAdmin } from "../../../services/service.js";
+import { newRentalRequestToOwner, ownerRequestToAdmin } from "../../../services/service.js";
 import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import Razorpay from "razorpay";
@@ -324,6 +324,10 @@ export const makeRentRequestHandler = async (req, res) => {
 
         //Update the RentalStore Collection with booking id
         await RentalStores.findOneAndUpdate({ _id: rent_store_id }, { $push: { bookings: newBooking._id } }, { new: true, upsert: true });
+
+        const user = await User.findOne({ _id: store.user_id })
+        const bookedUser = await User.findOne({ _id: req.user._id });
+        await newRentalRequestToOwner(user.email, {startDate: start_date, endDate: end_date, requesterName: bookedUser.first_name}, `${store.address_line1}, ${store.address_line2}, ${store.state}, ${store.city} - ${store.pincode}`, user.first_name)
 
         return res.status(201).json({
             status: "Success",
@@ -645,7 +649,7 @@ export const getMyBookingLogs = async (req, res) => {
             })
         }
 
-        const bookedStores = await Booking.find({ user_id: userId, is_available: 4 }).populate('payment_id').populate('rental_store_id')
+        const bookedStores = await Booking.find({ user_id: userId, is_available: 3 }).populate('payment_id').populate('rental_store_id')
         return res.status(200).json({
             status: "Success",
             message: "All Booking logs found!",

@@ -309,3 +309,207 @@ export async function statusUpdateToOwner(mailId, status, firstName) {
         </html>`
     });
 }
+
+export async function newRentalRequestToOwner(mailId, bookingDetails, propertyAddress, ownerFirstName) {
+
+    const { requesterName, startDate, endDate } = bookingDetails;
+
+    await transporter.sendMail({
+        from: process.env.USER,
+        to: mailId,
+        subject: "New Rental Request for Your Property",
+        html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8" />
+            <title>New Rental Request</title>
+            <link
+            href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700&display=swap"
+            rel="stylesheet"
+            />
+            <style>
+            body {
+                font-family: "Work Sans", sans-serif !important;
+                background-color: #f6f6f6;
+                margin: 0;
+                padding: 0;
+                -webkit-font-smoothing: antialiased;
+                -webkit-text-size-adjust: none;
+                width: 100% !important;
+            }
+            .container {
+                display: block;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #ffffff;
+                border: 1px solid #e9e9e9;
+            }
+            .content {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+                font-weight: bold;
+                margin: 0 0 20px;
+                text-align: center;
+            }
+            p {
+                font-size: 14px;
+                margin: 0 0 20px;
+            }
+            a {
+                color: #348eda;
+                text-decoration: underline;
+            }
+            .btn {
+                text-decoration: none;
+                color: #fff !important;
+                background-color: #348eda;
+                padding: 10px 20px;
+                font-size: 16px;
+                font-weight: bold;
+                margin: 20px 0;
+                display: inline-block;
+                border-radius: 5px;
+            }
+            li {
+                font-weight: normal !important;
+                margin: 10px auto;
+                font-size: 14px;
+            }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+            <h1 style="text-align: center">New Rental Request</h1>
+                <div class="content">
+                    <p>Hello, ${ownerFirstName}</p>
+                    <p>You have received a new rental request for your property at </p>
+                    <p>${propertyAddress}.</p>
+                    <p><strong>Requester:</strong> ${requesterName}</p>
+                    <p><strong>Rental Period:</strong> ${startDate} to ${endDate}</p>
+                    <p>Please review the request and respond at your earliest convenience.</p>
+                    <p>
+                    <a href="${process.env.FRONTEND_BASE_URL}/user/sign-in" class="btn">View Request</a>
+                    </p>
+                    <p>
+                    Thanks,<br />The Support Team<br /><small
+                        ><i>RentIt - The Rental Providing Platform</i></small
+                    >
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>`
+    });
+}
+
+export async function rentalStoreRequestStatusUpdate(mailId, status, firstName) {
+
+    const statusMessage = status === 1
+        ? 'We are pleased to inform you that your rental store request has been accepted. You can contact owner, make payment and avail your store. Congratulations for your bussiness!'
+        : 'We regret to inform you that your rental store request has been rejected.';
+
+    const actionMessage = status === 1
+        ? 'You can now set up your rental store using the link below:'
+        : 'Please contact our support team for further assistance.';
+
+    const buttonText = status === 1 ? 'Dashboard' : 'Contact Support';
+    const buttonLink = status === 1
+        ? `${process.env.FRONTEND_BASE_URL}/user/sign-in`
+        : `mailto:admin@rentit.com`; 
+
+    await transporter.sendMail({
+        from: process.env.USER,
+        to: mailId,
+        subject: "Update on Your Rental Store Request",
+        html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8" />
+            <title>Update on Your Rental Store Request</title>
+            <link
+            href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;700&display=swap"
+            rel="stylesheet"
+            />
+            <style>
+            body {
+                font-family: "Work Sans", sans-serif !important;
+                background-color: #f6f6f6;
+                margin: 0;
+                padding: 0;
+                -webkit-font-smoothing: antialiased;
+                -webkit-text-size-adjust: none;
+                width: 100% !important;
+            }
+            .container {
+                display: block;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+                background-color: #ffffff;
+                border: 1px solid #e9e9e9;
+            }
+            .content {
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            h1 {
+                font-size: 24px;
+                font-weight: bold;
+                margin: 0 0 20px;
+                text-align: center;
+            }
+            p {
+                font-size: 14px;
+                margin: 0 0 20px;
+            }
+            a {
+                color: #348eda;
+                text-decoration: underline;
+            }
+            .btn {
+                text-decoration: none;
+                color: #fff !important;
+                background-color: #348eda;
+                padding: 10px 20px;
+                font-size: 16px;
+                font-weight: bold;
+                margin: 20px 0;
+                display: inline-block;
+                border-radius: 5px;
+            }
+            li {
+                font-weight: normal !important;
+                margin: 10px auto;
+                font-size: 14px;
+            }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+            <h1 style="text-align: center">Rental Store Request Status</h1>
+                <div class="content">
+                    <p>Hello, ${firstName}</p>
+                    <p>${statusMessage}</p>
+                    <p>${actionMessage}</p>
+                    <p>
+                    <a href="${buttonLink}" class="btn">${buttonText}</a>
+                    </p>
+                    <p>
+                    Thanks,<br />The Support Team<br /><small
+                        ><i>RentIt - The Rental Providing Platform</i></small
+                    >
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>`
+    });
+}

@@ -4,6 +4,7 @@ import { RentalStores } from "../../models/RentalStores.js";
 import User from "../../models/UserModel.js";
 import { convertToISO, isValidDate } from "../../utils/helper.js";
 import { Booking } from "../../models/BookingModel.js";
+import { rentalStoreRequestStatusUpdate } from "../../services/service.js";
 
 export const postStoreForRentHandler = async (req, res) => {
 
@@ -348,7 +349,7 @@ export const bookingRequestActionHandler = async (req, res) => {
             })
         }
 
-        const booking = await Booking.findOne({ _id: new mongoose.Types.ObjectId(booking_id) });
+        const booking = await Booking.findOne({ _id: new mongoose.Types.ObjectId(booking_id) }).populate('user_id');
 
         if (!booking) {
             return res.status(404).json({
@@ -371,6 +372,7 @@ export const bookingRequestActionHandler = async (req, res) => {
         }
 
         const updateBooking = await Booking.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(booking_id) }, { $set: { is_available: action } }, { new: true })
+        await rentalStoreRequestStatusUpdate(booking.user_id.email, action, booking.user_id.first_name)
         res.status(200).json({
             status: "Success",
             message: `Booking ${action === 1 ? 'Accepted' : 'Rejected'} successfully!`,
