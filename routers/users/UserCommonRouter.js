@@ -22,7 +22,7 @@ UserCommonRouter.get('/common/user', authorize, getUserMailId);
 UserCommonRouter.put('/common/user', authorize, updateProfile);
 UserCommonRouter.post('/common/rent-request', authorize, makeRentRequestHandler);
 UserCommonRouter.get('/common/rent-request', authorize, getRentRequestOfUserHandler);
-UserCommonRouter.get('/common/all-rental-stores', authorize, allRentalStoresHandler);
+UserCommonRouter.get('/common/all-rental-stores', allRentalStoresHandler);
 UserCommonRouter.post('/common/payment', authorize, makePaymentHandler);
 UserCommonRouter.post('/common/payment-verification', authorize, paymentVerificationHandler); 
 UserCommonRouter.put('/common/update-payment', authorize, updatePaymentOnSuccessHandler);

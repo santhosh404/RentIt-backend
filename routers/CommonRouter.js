@@ -7,6 +7,6 @@ import multer from 'multer';
 export const CommonRouter = express.Router();
 const upload = multer()
 
-CommonRouter.get('/states', authorize, getStates);
-CommonRouter.get('/districts', authorize,  getDistricts);
+CommonRouter.get('/states', getStates);
+CommonRouter.get('/districts',  getDistricts);
 CommonRouter.post('/upload-file', authorize, upload.single('file'), uploadFile);

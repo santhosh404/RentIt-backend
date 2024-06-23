@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { Owner } from "../../../models/OwnerModel.js";
 import { statusUpdateToOwner } from "../../../services/service.js";
+import User from "../../../models/UserModel.js";
 
 export const approveOwnerRequestHandler = async (req, res) => {
     const ownerId = new mongoose.Types.ObjectId(req.body.id)

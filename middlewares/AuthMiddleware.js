@@ -30,6 +30,4 @@ const authorize = async (req, res, next) => {
     })
 }
 
-
-
 export { authorize }

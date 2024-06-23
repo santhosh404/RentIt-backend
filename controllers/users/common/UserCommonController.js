@@ -350,26 +350,63 @@ export const makeRentRequestHandler = async (req, res) => {
 
 
 export const allRentalStoresHandler = async (req, res) => {
+    let { userId, keywords, state, district, specification, rentPerMonth, squareFeet } = req.query;
+
     try {
-        const rentalStores = await RentalStores.find({ user_id: { $ne: req.user._id } });
+        const filter = {};
+
+        if (userId) {
+            userId = new mongoose.Types.ObjectId(userId);
+            filter.user_id = { $ne: userId };
+        }
+
+        if (keywords) {
+            const keywordArray = keywords.split(',').map(keyword => new RegExp(keyword, 'i'));
+            filter.keywords = { $in: keywordArray };
+        }
+
+        if (state) {
+            filter.state = state.split('%20').join(' ');
+        }
+
+        if (district) {
+            filter.city = district.split('%20').join(' ');
+        }
+
+        if (specification) {
+            filter.specification = specification;
+        }
+
+        if (rentPerMonth) {
+            const [minRent, maxRent] = rentPerMonth.split(',').map(Number);
+            filter.rate = { $gte: minRent, $lte: maxRent };
+        }
+
+        if (squareFeet) {
+            const [minSqFt, maxSqFt] = squareFeet.split(',').map(Number);
+            filter.square_feet = { $gte: minSqFt, $lte: maxSqFt };
+        }
+
+        console.log(filter);
+        const rentalStores = await RentalStores.find(filter);
         return res.status(200).json({
             status: "Success",
-            message: "All rental stores found!",
+            message: "Filtered rental stores found!",
             data: {
                 rentalStores: rentalStores
             }
-        })
-    }
-    catch (err) {
+        });
+    } catch (err) {
         return res.status(500).json({
             status: "Error",
             message: "Internal Server Error!",
             data: {
                 error: err.message
             }
-        })
+        });
     }
 }
+
 
 export const getRentRequestOfUserHandler = async (req, res) => {
     const userId = new mongoose.Types.ObjectId(req.user._id);
@@ -573,7 +610,7 @@ export const updatePaymentOnSuccessHandler = async (req, res) => {
         //Updating the Booking collection's is_available field with respection status
 
         if (status === 1) {
-            await Booking.findOneAndUpdate({ _id: payment.booking_id }, { $set: { is_available: 4 } }, { new: true });
+            await Booking.findOneAndUpdate({ _id: payment.booking_id }, { $set: { is_available: 3 } }, { new: true });
         }
 
         return res.status(200).json({
