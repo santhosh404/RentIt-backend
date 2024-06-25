@@ -40,9 +40,13 @@ The platform includes a robust admin interface that allows administrators to ove
 - **Database:** MongoDB
 - **Payment Integration:** Razorpay
 
+### **Database Design**
+![Rentit DB Design](https://github.com/santhosh404/RentIt-backend/assets/72611988/3b47eed8-348e-4344-a14d-9a42a4827060)
+
 ### **Project Documentation**
 
 [Rentit - Project Documentation](https://mongodb-task.notion.site/RentIt-Project-Documentation-19a441c3bc284ea7a7f4f4d94a1a3cab?pvs=4)
+
 
 ### **API Documentation**
 
