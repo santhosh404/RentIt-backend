@@ -336,7 +336,7 @@ export const getStoreByIdHandler = async (req, res) => {
 }
 
 export const bookingRequestActionHandler = async (req, res) => {
-    const { booking_id, action } = req.body;
+    const { booking_id, minimum_advance_amount, action } = req.body;
 
     try {
         if (!booking_id || !action) {
@@ -371,7 +371,13 @@ export const bookingRequestActionHandler = async (req, res) => {
             })
         }
 
-        const updateBooking = await Booking.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(booking_id) }, { $set: { is_available: action } }, { new: true })
+        let updateQuery = { $set: { is_available: action } };
+
+        if (action === 1) {
+            updateQuery.$set.minimum_advance_amount = minimum_advance_amount;
+        }
+
+        const updateBooking = await Booking.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(booking_id) }, updateQuery, { new: true })
         await rentalStoreRequestStatusUpdate(booking.user_id.email, action, booking.user_id.first_name)
         res.status(200).json({
             status: "Success",

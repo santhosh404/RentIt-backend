@@ -22,6 +22,10 @@ const bookingModel = mongoose.Schema({
         type: Number,
         default: 0
     },
+    minimum_advance_amount: {
+        type: Number,
+        default: 0
+    },
     user_id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"

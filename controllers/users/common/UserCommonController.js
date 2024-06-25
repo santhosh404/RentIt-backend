@@ -305,7 +305,7 @@ export const makeRentRequestHandler = async (req, res) => {
         if (isDateConflict) {
             return res.status(409).json({
                 status: "Error",
-                message: "Selected dates are already booked for rent. Please select other dates and try again",
+                message: "Selected dates are already booked for rent. Please view the availability, select other dates and try again",
                 data: {
                     error: "The requested dates conflict with an existing booking."
                 }
@@ -440,7 +440,8 @@ export const getRentRequestOfUserHandler = async (req, res) => {
                             booking_id: '$_id',
                             start_date: '$start_date',
                             end_date: '$end_date',
-                            status: '$is_available'
+                            status: '$is_available',
+                            minimum_advance_amount: '$minimum_advance_amount'
                         }
                     }
                 }
@@ -501,14 +502,14 @@ export const makePaymentHandler = async (req, res) => {
         }
 
         const payment = await razorpay.orders.create({
-            amount: parseInt(amount * 100),
+            amount: parseInt(amount) * 100,
             currency: "INR"
         });
 
         console.log(payment)
 
         const newPayment = new Payment({
-            amount: payment.amount * 100,
+            amount: payment.amount,
             // transaction_id: payment.id,
             booking_id: booking_id,
             user_id: req.user._id
@@ -530,7 +531,7 @@ export const makePaymentHandler = async (req, res) => {
             data: {
                 error: err.message
             }
-        })
+        })  
     }
 }
 
