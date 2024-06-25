@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import { Owner } from "../../../models/OwnerModel.js";
 import { statusUpdateToOwner } from "../../../services/service.js";
 import User from "../../../models/UserModel.js";
+import { Admin } from "../../../models/AdminModel.js";
+import bcrypt from "bcryptjs"
 
 export const approveOwnerRequestHandler = async (req, res) => {
     const ownerId = new mongoose.Types.ObjectId(req.body.id)
@@ -47,7 +49,7 @@ export const approveOwnerRequestHandler = async (req, res) => {
         const approveOwner = await Owner.findOneAndUpdate({ _id: ownerId }, { $set: { is_approved: 1 } }, { new: true })
 
         // Update user with is_owner
-        await User.findOneAndUpdate({ _id: owner.user_id._id }, { $set: { is_owner:  true} }, { new: true })
+        await User.findOneAndUpdate({ _id: owner.user_id._id }, { $set: { is_owner: true } }, { new: true })
 
 
         //Sending the mail to owner regarding the status
@@ -258,4 +260,82 @@ export const ownerByIdHandler = async (req, res) => {
             }
         })
     }
+}
+
+export const adminByIdHandler = async (req, res) => {
+    const adminId = new mongoose.Types.ObjectId(req.user._id);
+
+    try {
+        const admin = await Admin.findById(adminId);
+
+        if (!admin) {
+            return res.status(404).json({
+                status: "Error",
+                message: "Admin not found!",
+                data: {
+                    error: `Admin with id ${adminId} was not found!`
+                }
+            })
+        }
+
+        return res.status(200).json({
+            status: "Success",
+            message: "Admin retrieved successfully",
+            data: {
+                admin: admin
+            }
+        })
+    }
+    catch (err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error!",
+            data: {
+                error: err.message
+            }
+        })
+    }
+}
+
+export const updateProfileHandler = async (req, res) => {
+
+    let { password, ...rest } = req.body
+
+    try {
+        const admin = await Admin.findOne({ _id: req.user._id });
+        if (!admin) {
+            return res.status(404).json({
+                status: "Error",
+                message: "Admin not found!",
+                data: {
+                    error: `Admin with id ${req.user._id} not found!`
+                }
+            })
+        }
+        let update = { ...rest };
+
+        if (password) {
+            update.password = await bcrypt.hash(password, 10);
+        }
+
+        const updatedAdmin = await Admin.findByIdAndUpdate(req.user._id, update, { new: true });
+        res.status(200).json({
+            status: "Success",
+            message: "Profile updated successfully!",
+            data: {
+                admin: updatedAdmin
+            }
+        })
+    }
+
+    catch (err) {
+        return res.status(500).json({
+            status: "Error",
+            message: "Internal Server Error!",
+            data: {
+                error: err.message
+            }
+        })
+    }
+
 }
