@@ -36,7 +36,7 @@ The platform includes a robust admin interface that allows administrators to ove
 ### **Technologies Used**
 
 - **Frontend:** React.js
-- **Backend:** Node.js, Express.js
+- **Backend:** Node.js, Express.js, AWS S3 (For File Upload)
 - **Database:** MongoDB
 - **Payment Integration:** Razorpay
 
